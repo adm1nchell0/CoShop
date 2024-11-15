@@ -1,0 +1,70 @@
+﻿@page "/lessons/create"
+@using Microsoft.EntityFrameworkCore
+@using CoShop.Models
+@inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Lesson</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Lesson" OnValidSubmit="AddLesson" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="mb-3">
+                <label for="title" class="form-label">Title:</label>
+                <InputText id="title" @bind-Value="Lesson.Title" class="form-control" aria-required="true" />
+                <ValidationMessage For="() => Lesson.Title" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">Content:</label>
+                <InputText id="content" @bind-Value="Lesson.Content" class="form-control" aria-required="true" />
+                <ValidationMessage For="() => Lesson.Content" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="courseid" class="form-label">CourseId:</label>
+                <InputNumber id="courseid" @bind-Value="Lesson.CourseId" class="form-control" aria-required="true" />
+                <ValidationMessage For="() => Lesson.CourseId" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="duration" class="form-label">Duration:</label>
+                <InputText id="duration" @bind-Value="Lesson.Duration" class="form-control" aria-required="true" />
+                <ValidationMessage For="() => Lesson.Duration" class="text-danger" />
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/lessons">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Lesson Lesson { get; set; } = new();
+
+    // Защита от атак чрезмерного заполнения, см. https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddLesson()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        // Преобразование строки в TimeSpan (если это необходимо)
+        if (!string.IsNullOrWhiteSpace(Lesson.Duration) && !TimeSpan.TryParse(Lesson.Duration, out TimeSpan duration))
+        {
+            // Можно добавить логику обработки ошибки, если Duration не в правильном формате
+            // Например, можно установить значение по умолчанию или отобразить сообщение об ошибке.
+            // В этом месте можно вернуть сообщение, если Duration невалидна.
+            return; // Прекращаем выполнение, если Duration невалидна
+        }
+
+        // Сохранение нового урока в базу данных
+        context.Lessons.Add(Lesson);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/lessons");
+    }
+}

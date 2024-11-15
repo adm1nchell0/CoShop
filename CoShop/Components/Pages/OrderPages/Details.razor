@@ -1,0 +1,52 @@
+﻿@page "/orders/details"
+@using Microsoft.EntityFrameworkCore
+@using CoShop.Models
+@inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>Order</h2>
+    <hr />
+    @if (order is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">PolzoId</dt>
+            <dd class="col-sm-10">@order.PolzoId</dd>
+            <dt class="col-sm-2">CourseId</dt>
+            <dd class="col-sm-10">@order.CourseId</dd>
+            <dt class="col-sm-2">OrderDate</dt>
+            <dd class="col-sm-10">@order.OrderDate</dd>
+            <dt class="col-sm-2">TotalAmount</dt>
+            <dd class="col-sm-10">@order.TotalAmount</dd>
+        </dl>
+        <div>
+            <a href="@($"/orders/edit?id={order.Id}")">Edit</a> |
+            <a href="@($"/orders")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Order? order;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        order = await context.Orders.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (order is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

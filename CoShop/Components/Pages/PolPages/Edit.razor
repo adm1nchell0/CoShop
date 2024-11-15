@@ -1,0 +1,89 @@
+﻿@page "/pols/edit"
+@using Microsoft.EntityFrameworkCore
+@using CoShop.Models
+@inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Pol</h2>
+<hr />
+@if (Pol is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Pol" OnValidSubmit="UpdatePol" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Pol.Id" value="@Pol.Id" />
+                <div class="mb-3">
+                    <label for="namepol" class="form-label">NamePol:</label>
+                    <InputText id="namepol" @bind-Value="Pol.NamePol" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Pol.NamePol" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/pols">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Pol? Pol { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Pol ??= await context.Pols.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Pol is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdatePol()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Pol!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!PolExists(Pol!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/pols");
+    }
+
+    private bool PolExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Pols.Any(e => e.Id == id);
+    }
+}

@@ -1,0 +1,46 @@
+﻿@page "/pols/details"
+@using Microsoft.EntityFrameworkCore
+@using CoShop.Models
+@inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>Pol</h2>
+    <hr />
+    @if (pol is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">NamePol</dt>
+            <dd class="col-sm-10">@pol.NamePol</dd>
+        </dl>
+        <div>
+            <a href="@($"/pols/edit?id={pol.Id}")">Edit</a> |
+            <a href="@($"/pols")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Pol? pol;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        pol = await context.Pols.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (pol is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}
