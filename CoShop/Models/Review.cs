@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using CoShop.Data;
 
 namespace CoShop.Models
 {
@@ -12,7 +13,7 @@ namespace CoShop.Models
 
         [Required]
         [Display(Name = "ID Пользователя")]
-        public int PolzoId { get; set; } // Идентификатор пользователя, оставившего отзыв
+        public string ApplicationUserId { get; set; } // Идентификатор пользователя, оставившего отзыв
 
         [Required]
         [Display(Name = "Возраст")]
@@ -28,6 +29,6 @@ namespace CoShop.Models
         public DateTime CreatedAt { get; set; } // Дата и время создания отзыва
 
         public virtual Course? Course { get; set; } // Курс, к которому относится отзыв
-        public virtual Polzo? Polzo { get; set; } // Пользователь, оставивший отзыв
+        public virtual ApplicationUser? ApplicationUser { get; set; } // Пользователь, оставивший отзыв
     }
 }

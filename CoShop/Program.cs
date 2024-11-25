@@ -30,14 +30,30 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
 builder.Services.AddQuickGridEntityFrameworkAdapter();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequiredUniqueChars = 0;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+}
+    )
+    .AddRoles<IdentityRole>() // +++ Add roles
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
+builder.Services.AddHttpClient();
+
 var app = builder.Build();
+
+await using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
+var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>();
+await DatabaseUtility.EnsureDbCreatedAndSeedAsync(options);
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -48,6 +64,8 @@ else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
+
+app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();

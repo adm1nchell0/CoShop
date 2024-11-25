@@ -4,6 +4,7 @@ using CoShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CoShop.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241119150719_SLOWBRAIN")]
+    partial class SLOWBRAIN
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,6 +37,12 @@ namespace CoShop.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateBirth")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -47,6 +56,9 @@ namespace CoShop.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -58,13 +70,25 @@ namespace CoShop.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Patronymic")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("PolId")
+                        .HasColumnType("int");
+
                     b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Surname")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -83,6 +107,8 @@ namespace CoShop.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("PolId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -123,6 +149,10 @@ namespace CoShop.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -179,23 +209,24 @@ namespace CoShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("PolzoId")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CourseId");
+                    b.HasIndex("ApplicationUserId");
 
-                    b.HasIndex("PolzoId");
+                    b.HasIndex("CourseId");
 
                     b.ToTable("Orders");
                 });
@@ -218,52 +249,6 @@ namespace CoShop.Migrations
                     b.ToTable("Pols");
                 });
 
-            modelBuilder.Entity("CoShop.Models.Polzo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateBirth")
-                        .IsRequired()
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Patronymic")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<int?>("PolId")
-                        .IsRequired()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Surname")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PolId");
-
-                    b.ToTable("Polzos");
-                });
-
             modelBuilder.Entity("CoShop.Models.Review", b =>
                 {
                     b.Property<int>("Id")
@@ -271,6 +256,10 @@ namespace CoShop.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Comment")
                         .IsRequired()
@@ -283,17 +272,14 @@ namespace CoShop.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("PolzoId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CourseId");
+                    b.HasIndex("ApplicationUserId");
 
-                    b.HasIndex("PolzoId");
+                    b.HasIndex("CourseId");
 
                     b.ToTable("Reviews");
                 });
@@ -431,6 +417,15 @@ namespace CoShop.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("CoShop.Data.ApplicationUser", b =>
+                {
+                    b.HasOne("CoShop.Models.Pol", "Pol")
+                        .WithMany("ApplicationUsers")
+                        .HasForeignKey("PolId");
+
+                    b.Navigation("Pol");
+                });
+
             modelBuilder.Entity("CoShop.Models.Course", b =>
                 {
                     b.HasOne("CoShop.Models.Category", "Category")
@@ -455,51 +450,40 @@ namespace CoShop.Migrations
 
             modelBuilder.Entity("CoShop.Models.Order", b =>
                 {
+                    b.HasOne("CoShop.Data.ApplicationUser", "ApplicationUser")
+                        .WithMany("Orders")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("CoShop.Models.Course", "Course")
                         .WithMany("Orders")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CoShop.Models.Polzo", "Polzo")
-                        .WithMany("Orders")
-                        .HasForeignKey("PolzoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("ApplicationUser");
 
                     b.Navigation("Course");
-
-                    b.Navigation("Polzo");
-                });
-
-            modelBuilder.Entity("CoShop.Models.Polzo", b =>
-                {
-                    b.HasOne("CoShop.Models.Pol", "Pol")
-                        .WithMany("Polzos")
-                        .HasForeignKey("PolId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Pol");
                 });
 
             modelBuilder.Entity("CoShop.Models.Review", b =>
                 {
+                    b.HasOne("CoShop.Data.ApplicationUser", "ApplicationUser")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("CoShop.Models.Course", "Course")
                         .WithMany("Reviews")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CoShop.Models.Polzo", "Polzo")
-                        .WithMany("Reviews")
-                        .HasForeignKey("PolzoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("ApplicationUser");
 
                     b.Navigation("Course");
-
-                    b.Navigation("Polzo");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -553,6 +537,13 @@ namespace CoShop.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("CoShop.Data.ApplicationUser", b =>
+                {
+                    b.Navigation("Orders");
+
+                    b.Navigation("Reviews");
+                });
+
             modelBuilder.Entity("CoShop.Models.Category", b =>
                 {
                     b.Navigation("Courses");
@@ -569,14 +560,7 @@ namespace CoShop.Migrations
 
             modelBuilder.Entity("CoShop.Models.Pol", b =>
                 {
-                    b.Navigation("Polzos");
-                });
-
-            modelBuilder.Entity("CoShop.Models.Polzo", b =>
-                {
-                    b.Navigation("Orders");
-
-                    b.Navigation("Reviews");
+                    b.Navigation("ApplicationUsers");
                 });
 #pragma warning restore 612, 618
         }

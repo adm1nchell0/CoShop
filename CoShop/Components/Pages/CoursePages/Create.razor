@@ -40,6 +40,11 @@
                 <InputNumber id="categoryid" @bind-Value="Course.CategoryId" class="form-control" aria-required="true"/> 
                 <ValidationMessage For="() => Course.CategoryId" class="text-danger" /> 
             </div>        
+            <div class="mb-3">
+                <label for="imageurl" class="form-label">ImageUrl:</label> 
+                <InputText id="imageurl" @bind-Value="Course.ImageUrl" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Course.ImageUrl" class="text-danger" /> 
+            </div>        
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>

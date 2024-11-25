@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using NuGet.Protocol;
+using System.ComponentModel.DataAnnotations;
+using CoShop.Data;
 
 namespace CoShop.Models
 {
@@ -11,6 +13,6 @@ namespace CoShop.Models
         [StringLength(255, ErrorMessage = "Минимальное введеное значени не должно быть меньше 2", MinimumLength = 2)]
         public string? NamePol { get; set; }
 
-        public virtual ICollection<Polzo>? Polzos { get; set; } // Курсы, относящиеся к данной категории
+        public virtual ICollection<ApplicationUser>? ApplicationUsers { get; set; } 
     }
 }

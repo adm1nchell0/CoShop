@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using CoShop.Data;
 
 namespace CoShop.Models
 {
@@ -8,7 +9,7 @@ namespace CoShop.Models
 
         [Required]
         [Display(Name = "ID Пользователя")]
-        public int PolzoId { get; set; } // Идентификатор пользователя, сделавшего заказ
+        public string ApplicationUserId { get; set; } // Идентификатор пользователя, сделавшего заказ
 
         [Required]
         [Display(Name = "ID Курса")]
@@ -21,7 +22,7 @@ namespace CoShop.Models
         [Required]
         [Display(Name = "Сумма заказа")]
         public decimal TotalAmount { get; set; } // Общая сумма заказа
-        public virtual Polzo? Polzo { get; set; } // Пользователь, сделавший заказ
+        public virtual ApplicationUser? ApplicationUser { get; set; } // Пользователь, сделавший заказ
         public virtual Course? Course { get; set; } // Курс, который был куплен
     }
 }

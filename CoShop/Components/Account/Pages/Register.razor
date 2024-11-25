@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using CoShop.Data
+@using CoShop.Models
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
@@ -14,6 +15,7 @@
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject ApplicationDbContext dbContext
 
 <PageTitle>Register</PageTitle>
 
@@ -42,6 +44,46 @@
                 <label for="confirm-password">Confirm Password</label>
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
             </div>
+            <div class="mb-3">
+                <label for="surname" class="form-label">Фамилия:</label>
+                <InputText id="surname" @bind-Value="Input.Surname" class="form-control" />
+                <ValidationMessage For="() => Input.Surname" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="name" class="form-label">Имя:</label>
+                <InputText id="name" @bind-Value="Input.Name" class="form-control" />
+                <ValidationMessage For="() => Input.Name" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="patronymic" class="form-label">Отчество:</label>
+                <InputText id="patronymic" @bind-Value="Input.Patronymic" class="form-control" />
+                <ValidationMessage For="() => Input.Patronymic" class="text-danger" />
+            </div>
+
+            <div class="mb-3">
+                <label for="datebirth" class="form-label">Дата рождения:</label>
+                <InputDate id="datebirth" @bind-Value="Input.DateBirth" class="form-control" />
+                <ValidationMessage For="() => Input.DateBirth" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="polId" class="form-label">Пол:</label>
+                <InputSelect id="polId" @bind-Value="Input.PolId" class="form-control">
+                    <option value="">Выберите пол...</option>
+                    @if (Pols != null)
+                    {
+                        @foreach (var pol in Pols)
+                        {
+                            <option value="@pol.Id">@pol.NamePol</option>
+                        }
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => Input.PolId" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="phone" class="form-label">Телефон:</label>
+                <InputText id="phone" @bind-Value="Input.Phone" class="form-control" placeholder="Введите номер телефона" />
+                <ValidationMessage For="() => Input.Phone" class="text-danger" />
+            </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
         </EditForm>
     </div>
@@ -63,11 +105,29 @@
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
+    public List<ApplicationUser>? applicationusers;
+
+    public List<Pol>? Pols { get; set; }
+
     private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    protected override void OnInitialized()
+    {
+        applicationusers = dbContext.ApplicationUsers.OrderBy(d => d.Surname).ToList();
+        Pols = dbContext.Pols.OrderBy(p => p.NamePol).ToList();
+    }
 
     public async Task RegisterUser(EditContext editContext)
     {
-        var user = CreateUser();
+        var user = new ApplicationUser()
+            {
+                Surname = Input.Surname,
+                Name = Input.Name,
+                Patronymic = Input.Patronymic,
+                DateBirth = Input.DateBirth,
+                Phone = Input.Phone,
+                PolId = Input.PolId
+            };
 
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         var emailStore = GetEmailStore();
@@ -141,5 +201,29 @@
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; } = "";
+
+        [Required]
+        [Display(Name = "Фамилия")]
+        [StringLength(100, ErrorMessage = "{0} должно быть не меньше {2} и не больше {1} символов.", MinimumLength = 3)]
+        public string? Surname { get; set; }
+
+        [Required]
+        [Display(Name = "Имя")]
+        [StringLength(100, ErrorMessage = "{0} должно быть не меньше {2} и не больше {1} символов.", MinimumLength = 3)]
+        public string? Name { get; set; }
+
+        [Display(Name = "Отчество")]
+        public string? Patronymic { get; set; }
+
+        [Display(Name = "Пол")]
+        public int? PolId { get; set; }
+
+        [Required]
+        [Display(Name = "Дата рождения")]
+        public DateTime? DateBirth { get; set; }
+
+        [Required]
+        [Display(Name = "Телефон")]
+        public string? Phone { get; set; }
     }
 }

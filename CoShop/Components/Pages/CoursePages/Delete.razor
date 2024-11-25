@@ -37,6 +37,10 @@
             <dt class="col-sm-2">CategoryId</dt>
             <dd class="col-sm-10">@course.CategoryId</dd>
         </dl>
+        <dl class="row">
+            <dt class="col-sm-2">ImageUrl</dt>
+            <dd class="col-sm-10">@course.ImageUrl</dd>
+        </dl>
         <EditForm method="post" Model="course" OnValidSubmit="DeleteCourse" FormName="delete" Enhance>
             <button type="submit" class="btn btn-danger" disabled="@(course is null)">Delete</button> |
             <a href="/courses">Back to List</a>

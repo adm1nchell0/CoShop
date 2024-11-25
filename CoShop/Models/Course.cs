@@ -29,6 +29,10 @@ namespace CoShop.Models
         [Display(Name = "ID Категории")]
         public int CategoryId { get; set; }
 
+        [Required]
+        [Display(Name = " Путь к изображению")]
+        public string? ImageUrl { get; set; } // Путь к изображению
+
         public virtual ICollection<Lesson>? Lessons { get; set; }
         public virtual ICollection<Review>? Reviews { get; set; }
         public virtual ICollection<Order>? Orders { get; set; }
