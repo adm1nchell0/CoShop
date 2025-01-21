@@ -1,8 +1,10 @@
 ﻿@page "/courses/create"
 @using Microsoft.EntityFrameworkCore
 @using CoShop.Models
+@using CoShop.Data
 @inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject ApplicationDbContext dbContext
 
 <PageTitle>Create</PageTitle>
 
@@ -36,10 +38,19 @@
                 <ValidationMessage For="() => Course.CreatedAt" class="text-danger" /> 
             </div>        
             <div class="mb-3">
-                <label for="categoryid" class="form-label">CategoryId:</label> 
-                <InputNumber id="categoryid" @bind-Value="Course.CategoryId" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Course.CategoryId" class="text-danger" /> 
-            </div>        
+                <label for="CategoryId" class="form-label">Категория:</label>
+                <InputSelect id="categoryId" @bind-Value="Course.CategoryId" class="form-control">
+                    <option value="">Выберите категорию...</option>
+                    @if (Categories != null)
+                    {
+                        @foreach (var category in Categories)
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => Course.CategoryId" class="text-danger" />
+            </div>
             <div class="mb-3">
                 <label for="imageurl" class="form-label">ImageUrl:</label> 
                 <InputText id="imageurl" @bind-Value="Course.ImageUrl" class="form-control" aria-required="true"/> 
@@ -57,6 +68,13 @@
 @code {
     [SupplyParameterFromForm]
     private Course Course { get; set; } = new();
+
+    public List<Category>? Categories { get; set; }
+
+   protected override void OnInitialized()
+    {
+        Categories = dbContext.Categorys.OrderBy(p => p.Name).ToList();
+    }
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddCourse()

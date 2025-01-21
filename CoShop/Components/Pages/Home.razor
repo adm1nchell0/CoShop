@@ -1,90 +1,132 @@
 ﻿@page "/"
-@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.EntityFrameworkCore
+@using CoShop.Models
+@using CoShop.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 
-<PageTitle>Главная - Продажа Онлайн-Курсов</PageTitle>
+<PageTitle>Главная</PageTitle>
 
-<div class="container text-center">
-    <h1 class="mt-5">Добро пожаловать на нашу платформу онлайн-курсов!</h1>
-    <p class="lead">Откройте для себя широкий выбор курсов, которые помогут вам развить новые навыки и достичь успеха.</p>
+<h2>Главная</h2>
 
-    <div class="mt-4">
-        <a class="btn btn-primary btn-lg me-3" href="courses">Просмотреть Курсы</a>
-        <a class="btn btn-secondary btn-lg" href="Account/Register">Зарегистрироваться</a>
-    </div>
-
-    <h2 class="mt-5">Наши Популярные Курсы</h2>
+<div class="container">
     <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm">
-                <img src="/images/cources/1.jpg" class="card-img-top" alt="Курс 1">
-                <div class="card-body">
-                    <h5 class="card-title">Курс по Программированию</h5>
-                    <p class="card-text">Научитесь создавать веб-приложения с нуля.</p>
-                    <a href="courses/programming" class="btn btn-primary">Подробнее</a>
+        @if (categories == null || !categories.Any())
+        {
+            <p>Нет доступных категорий.</p>
+        }
+        else
+        {
+            foreach (var category in categories)
+            {
+                <div class="col-md-12 mb-4">
+                    <div class="card border-0">
+                        <div class="card-header border-0 bg-transparent">
+                            <h5 class="mb-0">@category.Name</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            @if (category.Courses != null && category.Courses.Any())
+                            {
+                                <div class="row">
+                                    @foreach (var course in category.Courses)
+                                    {
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card custom-card-height border-0 border-radius-custom" style="background-image: url('/images/@course.ImageUrl'); background-size: cover; background-position: center;">
+                                                <div class="card-body bg-overlay d-flex flex-column justify-content-between">
+                                                    <div>
+                                                        <h6 class="card-title">@course.Title</h6>
+                                                        <p class="card-text">@course.Description</p>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-end">
+                                                        <p class="card-text mb-0">@course.Price р.</p>
+                                                        <NavLink class="btn btn-primary btn-radius-custom custom-btn ml-auto" href="">Подробнее</NavLink>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="m-3">Нет доступных курсов в этой категории.</p>
+                            }
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm">
-                <img src="/images/cources/1.jpg" class="card-img-top" alt="Курс 2">
-                <div class="card-body">
-                    <h5 class="card-title">Курс по Дизайну</h5>
-                    <p class="card-text">Изучите основы графического дизайна и UX/UI.</p>
-                    <a href="courses/design" class="btn btn-primary">Подробнее</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm">
-                <img src="/images/cources/1.jpg" class="card-img-top" alt="Курс 3">
-                <div class="card-body">
-                    <h5 class="card-title">Курс по Маркетингу</h5>
-                    <p class="card-text">Узнайте, как продвигать свой бизнес в интернете.</p>
-                    <a href="courses/marketing" class="btn btn-primary">Подробнее</a>
-                </div>
-            </div>
-        </div>
+            }
+        }
     </div>
 </div>
 
-<!-- Footer -->
-<footer class="bg-dark text-light mt-5">
-    <div class="container text-center py-4">
-        <p class="mb-0">© 2024 CoShop. Все права защищены.</p>
-        <div class="mt-2">
-            <a href="https://www.facebook.com/" class="text-light me-3" target="_blank">
-                <i class="bi bi-facebook"></i>
-            </a>
-            <a href="https://twitter.com/" class="text-light me-3" target="_blank">
-                <i class="bi bi-twitter"></i>
-            </a>
-            <a href="https://www.instagram.com/" class="text-light" target="_blank">
-                <i class="bi bi-instagram"></i>
-            </a>
-        </div>
-    </div>
-</footer>
-
 <style>
-    body {
-        background-color: #f8f9fa;
+    .border-radius-custom {
+        border-radius: 15px !important;
     }
 
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
+    .btn-radius-custom {
+        border-radius: 15px !important;
     }
 
-        .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
+    .bg-transparent {
+        background-color: transparent !important;
+    }
+
+    .bg-overlay {
+        background: rgba(0, 0, 0, 0.25); /* Полупрозрачный черный фон для текста */
+        color: white !important;
+        border-radius: 15px;
+        height: 100%; /* Увеличение высоты карточки */
+    }
+
+    .custom-btn {
+        background-color: rgba(0, 0, 0, 0.25) !important;
+        border: none !important; /* Убираем стандартную границу кнопки */
+        color: white !important; /* Цвет текста кнопки */
+    }
+
+        .custom-btn:hover {
+            background-color: rgba(0, 0, 0, 0.5) !important; /* Изменение фона при наведении */
         }
 
-    .card {
-        transition: transform 0.2s;
+    .custom-card-height {
+        height: 180px; /* Увеличение высоты карточки */
     }
 
-        .card:hover {
-            transform: scale(1.05);
-        }
+    .d-flex {
+        display: flex;
+    }
+
+    .flex-column {
+        flex-direction: column;
+    }
+
+    .justify-content-between {
+        justify-content: space-between;
+    }
+
+    .align-items-end {
+        align-items: flex-end;
+    }
+
+    .mb-0 {
+        margin-bottom: 0 !important;
+    }
+
+    .ml-auto {
+        margin-left: auto !important;
+    }
 </style>
+
+@code {
+    private ApplicationDbContext context = default!;
+    private List<Category> categories = new List<Category>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        context = DbFactory.CreateDbContext();
+        categories = await context.Categorys.Include(c => c.Courses).ToListAsync();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

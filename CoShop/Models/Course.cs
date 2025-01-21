@@ -9,12 +9,12 @@ namespace CoShop.Models
 
         [Required]
         [Display(Name = "Название")]
-        [StringLength(255, ErrorMessage = "Минимальное введеное значени не должно быть меньше 2", MinimumLength = 2)]
+        [StringLength(255, ErrorMessage = "Ввод не может быть меньше 2 символов", MinimumLength = 2)]
         public string? Title { get; set; }
 
         [Required]
         [Display(Name = "Описание")]
-        [StringLength(255, ErrorMessage = "Минимальное введеное значени не должно быть меньше 2", MinimumLength = 2)]
+        [StringLength(255, ErrorMessage = "Ввод не может быть меньше 2 символов", MinimumLength = 2)]
         public string? Description { get; set; }
 
         [Required]

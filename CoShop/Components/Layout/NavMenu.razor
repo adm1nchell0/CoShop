@@ -1,113 +1,118 @@
-﻿@* @implements IDisposable
+﻿@implements IDisposable
 
 @inject NavigationManager NavigationManager
 
-<head>
-    <style>
-        .bi[b-2htxuue35j] {
-            top: -0.75rem;
-            font-size: 20px;
-        }
-
-        .navbar {
-            margin-bottom: 20px; /* Добавьте отступ снизу для навигации */
-        }
-    </style>
-</head>
-
-<div class="top-row ps-3 navbar navbar-dark bg-dark">
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">CoShop</a>
-        <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
     </div>
 </div>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <AuthorizeView Roles="Administrator">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                            <span class="bi bi-house-door-fill" aria-hidden="true"></span> Главная
-                        </NavLink>
-                    </li>
-                    <li class="nav-item">
-                        <NavLink class="nav-link" href="polzos">
-                            <span class="bi bi-person-lines-fill" aria-hidden="true"></span> Пользователи
-                        </NavLink>
-                    </li>
-                    <li class="nav-item">
-                        <NavLink class="nav-link" href="pols">
-                            <span class="bi bi-gender-ambiguous" aria-hidden="true"></span> Пол
-                        </NavLink>
-                    </li>
-                    <li class="nav-item">
-                        <NavLink class="nav-link" href="categories">
-                            <span class="bi bi-tags-fill" aria-hidden="true"></span> Категории
-                        </NavLink>
-                    </li>
-                    <li class="nav-item">
-                        <NavLink class="nav-link" href="courses">
-                            <span class="bi bi-book-fill" aria-hidden="true"></span> Курсы
-                        </NavLink>
-                    </li>
-                    <li class="nav-item">
-                        <NavLink class="nav-link" href="lessons">
-                            <span class="bi bi-journal-text" aria-hidden="true"></span> Уроки
-                        </NavLink>
-                    </li>
-                    <li class="nav-item">
-                        <NavLink class="nav-link" href="orders">
-                            <span class="bi bi-cart-fill" aria-hidden="true"></span> Заказы
-                        </NavLink>
-                    </li>
-                    <li class="nav-item">
-                        <NavLink class="nav-link" href="reviews">
-                            <span class="bi bi-star-fill" aria-hidden="true"></span> Отзывы
-                        </NavLink>
-                    </li>
-                </ul>
-            </AuthorizeView>
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
-            <ul class="navbar-nav ms-auto">
-                <AuthorizeView>
-                    <Authorized>
-                        <li class="nav-item">
-                            <NavLink class="nav-link" href="Account/Manage">
-                                <span class="bi bi-person-fill" aria-hidden="true"></span> @context.User.Identity?.Name
-                            </NavLink>
-                        </li>
-                        <li class="nav-item">
-                            <form action="Account/Logout" method="post">
-                                <AntiforgeryToken />
-                                <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                                <button type="submit" class="nav-link btn btn-link" style="padding: 0;">
-                                    <span class="bi bi-arrow-bar-left" aria-hidden="true"></span> Выйти
-                                </button>
-                            </form>
-                        </li>
-                    </Authorized>
-                    <NotAuthorized>
-                        <li class="nav-item">
-                            <NavLink class="nav-link" href="Account/Login" title="Войти">
-                                <span class="bi bi-box-arrow-in-right"></span> Войти
-                            </NavLink>
-                        </li>
-                        <li class="nav-item">
-                            <NavLink class="nav-link" href="Account/Register" title="Регистрация">
-                                <span class="bi bi-person-plus"></span> Регистрация
-                            </NavLink>
-                        </li>
-                    </NotAuthorized>
-                </AuthorizeView>
-            </ul>
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door nav-icon" aria-hidden="true"></span> Главная
+            </NavLink>
         </div>
-    </div>
-</nav>
+        <AuthorizeView Roles="Administrator">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="categories" Match="NavLinkMatch.Prefix">
+                    <span class="bi bi-tags nav-icon" aria-hidden="true"></span> Категории(ред.)
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="courses" Match="NavLinkMatch.Prefix">
+                    <span class="bi bi-book nav-icon" aria-hidden="true"></span> Курсы
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="lessons" Match="NavLinkMatch.Prefix">
+                    <span class="bi bi-journal-bookmark nav-icon" aria-hidden="true"></span> Уроки
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="orders" Match="NavLinkMatch.Prefix">
+                    <span class="bi bi-cart nav-icon" aria-hidden="true"></span> Заказы
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="reviews" Match="NavLinkMatch.Prefix">
+                    <span class="bi bi-star nav-icon" aria-hidden="true"></span> Отзывы
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="exportexcel" Match="NavLinkMatch.Prefix">
+                    <span class="bi bi-file-earmark-arrow-down nav-icon" aria-hidden="true"></span> Экспорт
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="importexcel" Match="NavLinkMatch.Prefix">
+                    <span class="bi bi-file-earmark-arrow-up nav-icon" aria-hidden="true"></span> Импорт
+                </NavLink>
+            </div>
+        </AuthorizeView>
+
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="testexcel" Match="NavLinkMatch.Prefix">
+                        <span class="bi bi-bookmark-check nav-icon" aria-hidden="true"></span> Мои курсы
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="testexcel" Match="NavLinkMatch.Prefix">
+                        <span class="bi bi-clock-history nav-icon" aria-hidden="true"></span> История покупок
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Manage" Match="NavLinkMatch.Prefix">
+                        <span class="bi bi-person-circle nav-icon" aria-hidden="true"></span> Профиль
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <form action="Account/Logout" method="post">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                        <button type="submit" class="nav-link">
+                            <span class="bi bi-box-arrow-left nav-icon" aria-hidden="true"></span> Выйти
+                        </button>
+                    </form>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Register" Match="NavLinkMatch.Prefix">
+                        <span class="bi bi-person-plus nav-icon" aria-hidden="true"></span> Регистрация
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Login" Match="NavLinkMatch.Prefix">
+                        <span class="bi bi-box-arrow-in-right nav-icon" aria-hidden="true"></span> Авторизация
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </nav>
+</div>
+
+<style>
+    .nav-link {
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-icon {
+        margin-right: 8px; /* Отступ между иконкой и текстом */
+        font-size: 1.2rem; /* Размер иконки */
+    }
+
+    .nav-item[b-2htxuue35j] .nav-link {
+        line-height: var(--bs-body-line-height);
+    }
+</style>
 
 @code {
     private string? currentUrl;
@@ -129,23 +134,3 @@
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }
-
-@inherits LayoutComponentBase
-
-<div class="page">
-    <main>
-        <div class="top-row px-4">
-            <!-- Убрано "About" -->
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
-
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div> *@
