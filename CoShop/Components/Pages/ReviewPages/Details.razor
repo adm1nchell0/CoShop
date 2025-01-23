@@ -1,36 +1,38 @@
 ﻿@page "/reviews/details"
+@attribute [Authorize(Roles = "Administrator")]
 @using Microsoft.EntityFrameworkCore
 @using CoShop.Models
 @inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Details</PageTitle>
+<PageTitle>Детали</PageTitle>
 
-<h1>Details</h1>
+<h1>Детали</h1>
 
 <div>
-    <h2>Review</h2>
+    <h2>Отзыв</h2>
     <hr />
     @if (review is null)
     {
-        <p><em>Loading...</em></p>
+        <p><em>Загрузка...</em></p>
     }
-    else {
+    else
+    {
         <dl class="row">
-            <dt class="col-sm-2">CourseId</dt>
+            <dt class="col-sm-2">ID Курса</dt>
             <dd class="col-sm-10">@review.CourseId</dd>
-            <dt class="col-sm-2">PolzoId</dt>
+            <dt class="col-sm-2">ID Пользователя</dt>
             <dd class="col-sm-10">@review.ApplicationUserId</dd>
-            <dt class="col-sm-2">Rating</dt>
+            <dt class="col-sm-2">Оценка</dt>
             <dd class="col-sm-10">@review.Rating</dd>
-            <dt class="col-sm-2">Comment</dt>
+            <dt class="col-sm-2">Комментарий</dt>
             <dd class="col-sm-10">@review.Comment</dd>
-            <dt class="col-sm-2">CreatedAt</dt>
+            <dt class="col-sm-2">Дата создания</dt>
             <dd class="col-sm-10">@review.CreatedAt</dd>
         </dl>
         <div>
-            <a href="@($"/reviews/edit?id={review.Id}")">Edit</a> |
-            <a href="@($"/reviews")">Back to List</a>
+            <a href="@($"/reviews/edit?id={review.Id}")">Редактировать</a> |
+            <a href="@($"/reviews")">Вернуться к списку</a>
         </div>
     }
 </div>

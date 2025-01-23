@@ -1,4 +1,5 @@
 ﻿@page "/reviews"
+@attribute [Authorize(Roles = "Administrator")]
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using CoShop.Models
@@ -6,25 +7,25 @@
 @implements IAsyncDisposable
 @inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Список</PageTitle>
 
-<h1>Index</h1>
+<h1>Список</h1>
 
 <p>
-    <a href="reviews/create">Create New</a>
+    <a href="reviews/create">Создать новый</a>
 </p>
 
 <QuickGrid Class="table" Items="context.Reviews">
-    <PropertyColumn Property="review => review.CourseId" />
-    <PropertyColumn Property="review => review.ApplicationUserId" />
-    <PropertyColumn Property="review => review.Rating" />
-    <PropertyColumn Property="review => review.Comment" />
-    <PropertyColumn Property="review => review.CreatedAt" />
+    <PropertyColumn Property="review => review.CourseId" Title="ID Курса" />
+    <PropertyColumn Property="review => review.ApplicationUserId" Title="ID Пользователя" />
+    <PropertyColumn Property="review => review.Rating" Title="Оценка" />
+    <PropertyColumn Property="review => review.Comment" Title="Комментарий" />
+    <PropertyColumn Property="review => review.CreatedAt" Title="Дата создания" />
 
     <TemplateColumn Context="review">
-        <a href="@($"reviews/edit?id={review.Id}")">Edit</a> |
-        <a href="@($"reviews/details?id={review.Id}")">Details</a> |
-        <a href="@($"reviews/delete?id={review.Id}")">Delete</a>
+        <a href="@($"reviews/edit?id={review.Id}")">Редактировать</a> |
+        <a href="@($"reviews/details?id={review.Id}")">Детали</a> |
+        <a href="@($"reviews/delete?id={review.Id}")">Удалить</a>
     </TemplateColumn>
 </QuickGrid>
 

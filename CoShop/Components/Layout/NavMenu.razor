@@ -19,8 +19,8 @@
         </div>
         <AuthorizeView Roles="Administrator">
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="categories" Match="NavLinkMatch.Prefix">
-                    <span class="bi bi-tags nav-icon" aria-hidden="true"></span> Категории(ред.)
+                <NavLink class="nav-link" href="cats" Match="NavLinkMatch.Prefix">
+                    <span class="bi bi-tags nav-icon" aria-hidden="true"></span> Категории
                 </NavLink>
             </div>
             <div class="nav-item px-3">
@@ -44,13 +44,13 @@
                 </NavLink>
             </div>
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="exportexcel" Match="NavLinkMatch.Prefix">
-                    <span class="bi bi-file-earmark-arrow-down nav-icon" aria-hidden="true"></span> Экспорт
+                <NavLink class="nav-link" href="importexcel" Match="NavLinkMatch.Prefix">
+                    <span class="bi bi-file-earmark-arrow-up nav-icon" aria-hidden="true"></span> Импорт
                 </NavLink>
             </div>
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="importexcel" Match="NavLinkMatch.Prefix">
-                    <span class="bi bi-file-earmark-arrow-up nav-icon" aria-hidden="true"></span> Импорт
+                <NavLink class="nav-link" href="exportexcel" Match="NavLinkMatch.Prefix">
+                    <span class="bi bi-file-earmark-arrow-down nav-icon" aria-hidden="true"></span> Экспорт
                 </NavLink>
             </div>
         </AuthorizeView>
@@ -58,13 +58,8 @@
         <AuthorizeView>
             <Authorized>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="testexcel" Match="NavLinkMatch.Prefix">
+                    <NavLink class="nav-link" href="mycourses" Match="NavLinkMatch.Prefix">
                         <span class="bi bi-bookmark-check nav-icon" aria-hidden="true"></span> Мои курсы
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="testexcel" Match="NavLinkMatch.Prefix">
-                        <span class="bi bi-clock-history nav-icon" aria-hidden="true"></span> История покупок
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">

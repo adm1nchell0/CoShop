@@ -2,7 +2,7 @@
 
 namespace CoShop.Models
 {
-    public class Category
+    public class Cat
     {
         public int Id { get; set; } // Уникальный идентификатор категории
 

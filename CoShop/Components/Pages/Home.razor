@@ -38,8 +38,8 @@
                                                         <p class="card-text">@course.Description</p>
                                                     </div>
                                                     <div class="d-flex justify-content-between align-items-end">
-                                                        <p class="card-text mb-0">@course.Price р.</p>
-                                                        <NavLink class="btn btn-primary btn-radius-custom custom-btn ml-auto" href="">Подробнее</NavLink>
+                                                        <p class="card-text mb-0">@course.Price $</p>
+                                                        <NavLink class="btn btn-primary btn-radius-custom custom-btn ml-auto" href="@($"/course/{course.Id}")">Подробнее</NavLink>
                                                     </div>
                                                 </div>
                                             </div>
@@ -120,12 +120,12 @@
 
 @code {
     private ApplicationDbContext context = default!;
-    private List<Category> categories = new List<Category>();
+    private List<Cat> categories = new List<Cat>();
 
     protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
-        categories = await context.Categorys.Include(c => c.Courses).ToListAsync();
+        categories = await context.Cats.Include(c => c.Courses).ToListAsync();
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();

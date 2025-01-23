@@ -1,0 +1,45 @@
+﻿@page "/cats/create"
+@attribute [Authorize(Roles = "Administrator")]
+@using Microsoft.EntityFrameworkCore
+@using CoShop.Models
+@inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Создать</PageTitle>
+
+<h1>Создать</h1>
+
+<h2>Категория</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Cat" OnValidSubmit="AddCat" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="mb-3">
+                <label for="name" class="form-label">Название:</label>
+                <InputText id="name" @bind-Value="Cat.Name" class="form-control" aria-required="true" />
+                <ValidationMessage For="() => Cat.Name" class="text-danger" />
+            </div>
+            <button type="submit" class="btn btn-primary">Создать</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/cats">Вернуться к списку</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Cat Cat { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddCat()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Cats.Add(Cat);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/cats");
+    }
+}

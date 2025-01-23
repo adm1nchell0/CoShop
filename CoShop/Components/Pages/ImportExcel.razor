@@ -1,0 +1,395 @@
+﻿@page "/importexcel"
+@attribute [Authorize(Roles = "Administrator")]
+@rendermode InteractiveServer
+@using CoShop.Models
+@using ClosedXML.Excel
+@using Microsoft.EntityFrameworkCore
+@using CoShop.Data
+@inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
+@using Microsoft.AspNetCore.Components.Forms
+@implements IAsyncDisposable
+
+<PageTitle>Загрузка файла Excel для импорта в базу данных</PageTitle>
+
+<p>
+    <label>
+        Укажите файл Excel для импорта:
+        <InputFile OnChange="LoadFiles" />
+    </label>
+</p>
+
+@if (isLoading)
+{
+    <p>Uploading...</p>
+}
+else
+{
+    <ul>
+        <li>Количество импортированных категорий: @catrefs.Count()</li>
+        <li>Количество импортированных курсов: @courserefs.Count()</li>
+        <li>Количество импортированных уроков: @lessonrefs.Count()</li>
+        <li>Количество импортированных заказов: @orderrefs.Count()</li>
+        <li>Количество импортированных отзывов: @reviewrefs.Count()</li>
+    </ul>
+}
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div>Error: @ErrorMessage</div>
+}
+
+@code {
+    ApplicationDbContext context = default!;
+
+    List<CatRef> catrefs = new List<CatRef>();
+    List<CourseRef> courserefs = new List<CourseRef>();
+    List<LessonRef> lessonrefs = new List<LessonRef>();
+    List<OrderRef> orderrefs = new List<OrderRef>();
+    List<ReviewRef> reviewrefs = new List<ReviewRef>();
+    List<ApplicationUserRef> applicationusers = new List<ApplicationUserRef>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        context = DbFactory.CreateDbContext();
+        // Загрузка данных пользователей в список applicationusers
+        applicationusers = await context.ApplicationUsers.Select(u => new ApplicationUserRef
+            {
+                ApplicationUserRefExel = u.Id,
+                ApplicationUserRefDB = u.Id
+            }).ToListAsync();
+    }
+
+    public string ErrorMessage { get; set; } = "";
+    private bool isLoading;
+    string? errworksheet { get; set; } = "";
+    int? errindexrow { get; set; } = 0;
+    const int MAX_FILESIZE = 5000 * 1024; // 5 MB
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        isLoading = true;
+        var browserFile = e.File;
+
+        if (browserFile != null)
+        {
+            try
+            {
+                var fileStream = browserFile.OpenReadStream(MAX_FILESIZE);
+
+                var randomFile = Path.GetTempFileName();
+                var extension = Path.GetExtension(browserFile.Name);
+                var targetFilePath = Path.ChangeExtension(randomFile, extension);
+
+                var destinationStream = new FileStream(targetFilePath, FileMode.Create);
+                await fileStream.CopyToAsync(destinationStream);
+
+                await GetDataTableFromExcelAsync(destinationStream);
+
+                destinationStream.Close();
+            }
+            catch (Exception exception)
+            {
+                ErrorMessage = exception.Message;
+            }
+        }
+
+        isLoading = false;
+    }
+
+    public async Task GetDataTableFromExcelAsync(FileStream file)
+    {
+        using (XLWorkbook workbook = new XLWorkbook(file))
+        {
+            try
+            {
+                foreach (IXLWorksheet worksheet in workbook.Worksheets)
+                {
+                    errindexrow = 1;
+                    errworksheet = worksheet.Name;
+                    if (worksheet.Name == "Категории")
+                    {
+                        foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
+                        {
+                            errindexrow++;
+                            Cat cat = new Cat();
+
+                            var range = worksheet.RangeUsed();
+                            var table = range!.AsTable();
+
+                            cat.Name = row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Категория").RangeAddress.FirstAddress.ColumnNumber).Value.ToString();
+
+                            await context.Cats.AddAsync(cat);
+                            await context.SaveChangesAsync();
+
+                            var categoryIdColumn = table.FindColumn(c => c.FirstCell().Value.ToString() == "Id Категории");
+                            if (categoryIdColumn != null)
+                            {
+                                var categoryIdCell = row.Cell(categoryIdColumn.RangeAddress.FirstAddress.ColumnNumber);
+                                if (categoryIdCell != null)
+                                {
+                                    catrefs.Add(new CatRef
+                                        {
+                                            CatRefDB = cat.Id,
+                                            CatRefExel = int.Parse(categoryIdCell.Value.ToString())
+                                        });
+                                }
+                                else
+                                {
+                                    // Логирование или обработка случая, когда ячейка равна null
+                                    ErrorMessage = "CategoryId cell is null.";
+                                }
+                            }
+                            else
+                            {
+                                // Логирование или обработка случая, когда столбец не найден
+                                ErrorMessage = "CategoryId column not found.";
+                            }
+                        }
+                    }
+                    errindexrow = 1;
+
+                    if (worksheet.Name == "Курсы")
+                    {
+                        foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
+                        {
+                            errindexrow++;
+
+                            Course course = new Course();
+                            var range = worksheet.RangeUsed();
+                            var table = range!.AsTable();
+
+                            course.Title = row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Название").RangeAddress.FirstAddress.ColumnNumber).Value.ToString();
+
+                            course.Description = row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Описание").RangeAddress.FirstAddress.ColumnNumber).Value.ToString();
+
+                            course.Price = Decimal.Parse(row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Цена").RangeAddress.FirstAddress.ColumnNumber).Value.ToString());
+
+                            course.CreatedAt = DateTime.Parse(row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Дата создания").RangeAddress.FirstAddress.ColumnNumber).Value.ToString());
+
+                            course.ImageUrl = row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Путь к изображению").RangeAddress.FirstAddress.ColumnNumber).Value.ToString();
+
+                            var catIdExel = int.Parse(row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Id Категории").RangeAddress.FirstAddress.ColumnNumber).Value.ToString());
+
+                            var catRef = catrefs.FirstOrDefault(c => c.CatRefExel == catIdExel);
+                            if (catRef != null)
+                            {
+                                course.CatId = catRef.CatRefDB;
+                            }
+                            else
+                            {
+                                ErrorMessage = $"Category with Excel Id {catIdExel} not found in the database.";
+                                continue;
+                            }
+
+                            await context.Courses.AddAsync(course);
+                            await context.SaveChangesAsync();
+
+                            courserefs.Add(new CourseRef
+                                {
+                                    CourseRefDB = course.Id,
+                                    CourseRefExel = int.Parse(row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Id Курса").RangeAddress.FirstAddress.ColumnNumber).Value.ToString())
+                                });
+                        }
+                    }
+
+                    errindexrow = 1;
+                    if (worksheet.Name == "Уроки")
+                    {
+                        foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
+                        {
+                            errindexrow++;
+                            Lesson lessons = new Lesson();
+                            var range = worksheet.RangeUsed();
+                            var table = range!.AsTable();
+
+                            lessons.Title = row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Название").RangeAddress.FirstAddress.ColumnNumber).Value.ToString();
+
+                            lessons.Content = row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Содержимое").RangeAddress.FirstAddress.ColumnNumber).Value.ToString();
+
+                            lessons.Duration = row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Длительность").RangeAddress.FirstAddress.ColumnNumber).Value.ToString();
+
+                            var courseIdExel = int.Parse(row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Id Курса")
+                                .RangeAddress.FirstAddress.ColumnNumber).Value.ToString());
+
+                            var courseRef = courserefs.FirstOrDefault(c => c.CourseRefExel == courseIdExel);
+                            if (courseRef != null)
+                            {
+                                lessons.CourseId = courseRef.CourseRefDB;
+                            }
+                            else
+                            {
+                                ErrorMessage = $"Course with Excel Id {courseIdExel} not found in the database.";
+                                continue;
+                            }
+
+                            await context.Lessons.AddAsync(lessons);
+                            await context.SaveChangesAsync();
+
+                            lessonrefs.Add(new LessonRef
+                                {
+                                    LessonRefDB = lessons.Id,
+                                    LessonRefExel = int.Parse(row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Id Урока").RangeAddress.FirstAddress.ColumnNumber).Value.ToString())
+                                });
+                        }
+                    }
+
+                    errindexrow = 1;
+                    if (worksheet.Name == "Заказы")
+                    {
+                        foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
+                        {
+                            errindexrow++;
+                            Order order = new Order();
+                            var range = worksheet.RangeUsed();
+                            var table = range!.AsTable();
+
+                            order.OrderDate = DateTime.Parse(row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Дата оформления").RangeAddress.FirstAddress.ColumnNumber).Value.ToString());
+
+                            var courseIdExel = int.Parse(row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Id Курса").RangeAddress.FirstAddress.ColumnNumber).Value.ToString());
+
+                            var courseRef = courserefs.FirstOrDefault(c => c.CourseRefExel == courseIdExel);
+                            if (courseRef != null)
+                            {
+                                order.CourseId = courseRef.CourseRefDB;
+                            }
+                            else
+                            {
+                                ErrorMessage = $"Course with Excel Id {courseIdExel} not found in the database.";
+                                continue;
+                            }
+
+                            var applicationUserIdExel = row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Id Пользователя").RangeAddress.FirstAddress.ColumnNumber).GetValue<string>();
+
+                            var applicationUserRef = applicationusers.FirstOrDefault(c => c.ApplicationUserRefExel == applicationUserIdExel);
+                            if (applicationUserRef != null)
+                            {
+                                order.ApplicationUserId = applicationUserRef.ApplicationUserRefDB;
+                            }
+                            else
+                            {
+                                ErrorMessage = $"ApplicationUser with Excel Id {applicationUserIdExel} not found in the database.";
+                                continue;
+                            }
+
+                            await context.Orders.AddAsync(order);
+                            await context.SaveChangesAsync();
+
+                            orderrefs.Add(new OrderRef
+                                {
+                                    OrderRefDB = order.Id,
+                                    OrderRefExel = int.Parse(row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Id Заказа").RangeAddress.FirstAddress.ColumnNumber).Value.ToString())
+                                });
+                        }
+                    }
+
+                    errindexrow = 1;
+                    if (worksheet.Name == "Отзывы")
+                    {
+                        foreach (IXLRow row in worksheet.RowsUsed().Skip(1))
+                        {
+                            errindexrow++;
+                            Review review = new Review();
+                            var range = worksheet.RangeUsed();
+                            var table = range!.AsTable();
+
+                            review.CreatedAt = DateTime.Parse(row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Дата создания").RangeAddress.FirstAddress.ColumnNumber).Value.ToString());
+
+                            review.Rating = row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Оценка").RangeAddress.FirstAddress.ColumnNumber).GetValue<int>();
+
+                            review.Comment = row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Комментарий").RangeAddress.FirstAddress.ColumnNumber).Value.ToString();
+
+                            var courseIdExel = int.Parse(row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Id Курса").RangeAddress.FirstAddress.ColumnNumber).Value.ToString());
+
+                            var courseRef = courserefs.FirstOrDefault(c => c.CourseRefExel == courseIdExel);
+                            if (courseRef != null)
+                            {
+                                review.CourseId = courseRef.CourseRefDB;
+                            }
+                            else
+                            {
+                                ErrorMessage = $"Course with Excel Id {courseIdExel} not found in the database.";
+                                continue;
+                            }
+
+                            var applicationUserIdExel = row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Id Пользователя").RangeAddress.FirstAddress.ColumnNumber).GetValue<string>();
+
+                            var applicationUserRef = applicationusers.FirstOrDefault(c => c.ApplicationUserRefExel == applicationUserIdExel);
+                            if (applicationUserRef != null)
+                            {
+                                review.ApplicationUserId = applicationUserRef.ApplicationUserRefDB;
+                            }
+                            else
+                            {
+                                ErrorMessage = $"ApplicationUser with Excel Id {applicationUserIdExel} not found in the database.";
+                                continue;
+                            }
+
+                            await context.Reviews.AddAsync(review);
+                            await context.SaveChangesAsync();
+
+                            reviewrefs.Add(new ReviewRef
+                                {
+                                    ReviewRefDB = review.Id,
+                                    ReviewRefExel = int.Parse(row.Cell(table.FindColumn(c => c.FirstCell().Value.ToString() == "Id Отзыва").RangeAddress.FirstAddress.ColumnNumber).Value.ToString())
+                                });
+                        }
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                ErrorMessage = "Ошибка в импорте в таблице " + errworksheet + ", строка - " + errindexrow.ToString();
+
+                foreach (var el in catrefs)
+                {
+                    Cat? rez = context.Cats.FirstOrDefault(d => d.Id == el.CatRefDB);
+                    if (rez != null) context.Cats.Remove(rez);
+                    context.SaveChanges();
+                }
+                catrefs.Clear();
+
+                foreach (var el in courserefs)
+                {
+                    Course? rez = context.Courses.FirstOrDefault(d => d.Id == el.CourseRefDB);
+                    if (rez != null) context.Courses.Remove(rez);
+                    context.SaveChanges();
+                }
+                courserefs.Clear();
+
+                foreach (var el in lessonrefs)
+                {
+                    Lesson? rez = context.Lessons.FirstOrDefault(d => d.Id == el.LessonRefDB);
+                    if (rez != null) context.Lessons.Remove(rez);
+                    context.SaveChanges();
+                }
+                lessonrefs.Clear();
+
+                foreach (var el in orderrefs)
+                {
+                    Order? rez = context.Orders.FirstOrDefault(d => d.Id == el.OrderRefDB);
+                    if (rez != null) context.Orders.Remove(rez);
+                    context.SaveChanges();
+                }
+                orderrefs.Clear();
+
+                foreach (var el in reviewrefs)
+                {
+                    Review? rez = context.Reviews.FirstOrDefault(d => d.Id == el.ReviewRefDB);
+                    if (rez != null) context.Reviews.Remove(rez);
+                    context.SaveChanges();
+                }
+                reviewrefs.Clear();
+
+                foreach (var el in applicationusers)
+                {
+                    ApplicationUser? rez = context.ApplicationUsers.FirstOrDefault(d => d.Id == el.ApplicationUserRefDB);
+                    if (rez != null) context.ApplicationUsers.Remove(rez);
+                    context.SaveChanges();
+                }
+                applicationusers.Clear();
+            }
+        }
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

@@ -1,38 +1,40 @@
 ﻿@page "/courses/details"
+@attribute [Authorize(Roles = "Administrator")]
 @using Microsoft.EntityFrameworkCore
 @using CoShop.Models
 @inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Details</PageTitle>
+<PageTitle>Детали</PageTitle>
 
-<h1>Details</h1>
+<h1>Детали</h1>
 
 <div>
-    <h2>Course</h2>
+    <h2>Курс</h2>
     <hr />
     @if (course is null)
     {
-        <p><em>Loading...</em></p>
+        <p><em>Загрузка...</em></p>
     }
-    else {
+    else
+    {
         <dl class="row">
-            <dt class="col-sm-2">Title</dt>
+            <dt class="col-sm-2">Название</dt>
             <dd class="col-sm-10">@course.Title</dd>
-            <dt class="col-sm-2">Description</dt>
+            <dt class="col-sm-2">Описание</dt>
             <dd class="col-sm-10">@course.Description</dd>
-            <dt class="col-sm-2">Price</dt>
+            <dt class="col-sm-2">Цена</dt>
             <dd class="col-sm-10">@course.Price</dd>
-            <dt class="col-sm-2">CreatedAt</dt>
+            <dt class="col-sm-2">Дата создания</dt>
             <dd class="col-sm-10">@course.CreatedAt</dd>
-            <dt class="col-sm-2">CategoryId</dt>
-            <dd class="col-sm-10">@course.CategoryId</dd>
-            <dt class="col-sm-2">ImageUrl</dt>
+            <dt class="col-sm-2">ID Категории</dt>
+            <dd class="col-sm-10">@course.CatId</dd>
+            <dt class="col-sm-2">Путь к изображению</dt>
             <dd class="col-sm-10">@course.ImageUrl</dd>
         </dl>
         <div>
-            <a href="@($"/courses/edit?id={course.Id}")">Edit</a> |
-            <a href="@($"/courses")">Back to List</a>
+            <a href="@($"/courses/edit?id={course.Id}")">Редактировать</a> |
+            <a href="@($"/courses")">Вернуться к списку</a>
         </div>
     }
 </div>

@@ -1,18 +1,21 @@
 ﻿@page "/lessons/edit"
+@attribute [Authorize(Roles = "Administrator")]
 @using Microsoft.EntityFrameworkCore
 @using CoShop.Models
+@using CoShop.Data
 @inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject ApplicationDbContext dbContext
 
-<PageTitle>Edit</PageTitle>
+<PageTitle>Редактировать</PageTitle>
 
-<h1>Edit</h1>
+<h1>Редактировать</h1>
 
-<h2>Lesson</h2>
+<h2>Урок</h2>
 <hr />
 @if (Lesson is null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Загрузка...</em></p>
 }
 else
 {
@@ -20,36 +23,45 @@ else
         <div class="col-md-4">
             <EditForm method="post" Model="Lesson" OnValidSubmit="UpdateLesson" FormName="edit" Enhance>
                 <DataAnnotationsValidator />
-                <ValidationSummary role="alert"/>
+                <ValidationSummary role="alert" />
                 <input type="hidden" name="Lesson.Id" value="@Lesson.Id" />
                 <div class="mb-3">
-                    <label for="title" class="form-label">Title:</label>
-                    <InputText id="title" @bind-Value="Lesson.Title" class="form-control" aria-required="true"/>
+                    <label for="title" class="form-label">Название:</label>
+                    <InputText id="title" @bind-Value="Lesson.Title" class="form-control" aria-required="true" />
                     <ValidationMessage For="() => Lesson.Title" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="content" class="form-label">Content:</label>
-                    <InputText id="content" @bind-Value="Lesson.Content" class="form-control" aria-required="true"/>
+                    <label for="content" class="form-label">Содержание:</label>
+                    <InputText id="content" @bind-Value="Lesson.Content" class="form-control" aria-required="true" />
                     <ValidationMessage For="() => Lesson.Content" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="courseid" class="form-label">CourseId:</label>
-                    <InputNumber id="courseid" @bind-Value="Lesson.CourseId" class="form-control" aria-required="true"/>
+                    <label for="CourseId" class="form-label">Курс:</label>
+                    <InputSelect id="courseId" @bind-Value="Lesson.CourseId" class="form-control">
+                        <option value="">Выберите курс...</option>
+                        @if (Courses != null)
+                        {
+                            @foreach (var course in Courses)
+                            {
+                                <option value="@course.Id">@course.Title</option>
+                            }
+                        }
+                    </InputSelect>
                     <ValidationMessage For="() => Lesson.CourseId" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="duration" class="form-label">Duration:</label>
-                    <InputText id="duration" @bind-Value="Lesson.Duration" class="form-control" aria-required="true"/>
+                    <label for="duration" class="form-label">Продолжительность:</label>
+                    <InputText id="duration" @bind-Value="Lesson.Duration" class="form-control" aria-required="true" />
                     <ValidationMessage For="() => Lesson.Duration" class="text-danger" />
                 </div>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
             </EditForm>
         </div>
     </div>
 }
 
 <div>
-    <a href="/lessons">Back to List</a>
+    <a href="/lessons">Вернуться к списку</a>
 </div>
 
 @code {
@@ -58,6 +70,13 @@ else
 
     [SupplyParameterFromForm]
     private Lesson? Lesson { get; set; }
+
+    public List<Course>? Courses { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Courses = dbContext.Courses.OrderBy(p => p.Title).ToList();
+    }
 
     protected override async Task OnInitializedAsync()
     {

@@ -27,7 +27,7 @@ namespace CoShop.Models
 
         [Required]
         [Display(Name = "ID Категории")]
-        public int CategoryId { get; set; }
+        public int CatId { get; set; }
 
         [Required]
         [Display(Name = " Путь к изображению")]
@@ -36,6 +36,6 @@ namespace CoShop.Models
         public virtual ICollection<Lesson>? Lessons { get; set; }
         public virtual ICollection<Review>? Reviews { get; set; }
         public virtual ICollection<Order>? Orders { get; set; }
-        public virtual Category? Category { get; set; }
+        public virtual Cat? Cat { get; set; }
     }
 }

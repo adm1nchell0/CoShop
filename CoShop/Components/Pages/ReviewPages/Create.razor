@@ -1,59 +1,77 @@
 ﻿@page "/reviews/create"
+@attribute [Authorize(Roles = "Administrator")]
 @using Microsoft.EntityFrameworkCore
 @using CoShop.Models
+@using CoShop.Data
 @inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject ApplicationDbContext dbContext
 
-<PageTitle>Create</PageTitle>
+<PageTitle>Создать</PageTitle>
 
-<h1>Create</h1>
+<h1>Создать</h1>
 
-<h2>Review</h2>
+<h2>Отзыв</h2>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <EditForm method="post" Model="Review" OnValidSubmit="AddReview" FormName="create" Enhance>
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert"/>
+            <ValidationSummary class="text-danger" role="alert" />
             <div class="mb-3">
-                <label for="courseid" class="form-label">CourseId:</label> 
-                <InputNumber id="courseid" @bind-Value="Review.CourseId" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Review.CourseId" class="text-danger" /> 
-            </div>        
+                <label for="CourseId" class="form-label">Курс:</label>
+                <InputSelect id="courseId" @bind-Value="Review.CourseId" class="form-control">
+                    <option value="">Выберите курс...</option>
+                    @if (Courses != null)
+                    {
+                        @foreach (var course in Courses)
+                        {
+                            <option value="@course.Id">@course.Title</option>
+                        }
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => Review.CourseId" class="text-danger" />
+            </div>
             <div class="mb-3">
-                <label for="applicationuserid" class="form-label">ApplicationUserId:</label>
-                <InputNumber id="applicationuserid" @bind-Value="Review.ApplicationUserId" class="form-control" aria-required="true" />
+                <label for="applicationUserId" class="form-label">ID Пользователя:</label>
+                <InputText id="applicationUserId" @bind-Value="Review.ApplicationUserId" class="form-control" aria-required="true" />
                 <ValidationMessage For="() => Review.ApplicationUserId" class="text-danger" />
-            </div>        
+            </div>
             <div class="mb-3">
-                <label for="rating" class="form-label">Rating:</label> 
-                <InputNumber id="rating" @bind-Value="Review.Rating" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Review.Rating" class="text-danger" /> 
-            </div>        
+                <label for="rating" class="form-label">Оценка:</label>
+                <InputNumber id="rating" @bind-Value="Review.Rating" class="form-control" aria-required="true" />
+                <ValidationMessage For="() => Review.Rating" class="text-danger" />
+            </div>
             <div class="mb-3">
-                <label for="comment" class="form-label">Comment:</label> 
-                <InputText id="comment" @bind-Value="Review.Comment" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Review.Comment" class="text-danger" /> 
-            </div>        
+                <label for="comment" class="form-label">Комментарий:</label>
+                <InputTextArea id="comment" @bind-Value="Review.Comment" class="form-control" aria-required="true" />
+                <ValidationMessage For="() => Review.Comment" class="text-danger" />
+            </div>
             <div class="mb-3">
-                <label for="createdat" class="form-label">CreatedAt:</label> 
-                <InputDate id="createdat" @bind-Value="Review.CreatedAt" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Review.CreatedAt" class="text-danger" /> 
-            </div>        
-            <button type="submit" class="btn btn-primary">Create</button>
+                <label for="createdAt" class="form-label">Дата создания:</label>
+                <InputDate id="createdAt" @bind-Value="Review.CreatedAt" class="form-control" aria-required="true" />
+                <ValidationMessage For="() => Review.CreatedAt" class="text-danger" />
+            </div>
+            <button type="submit" class="btn btn-primary">Создать</button>
         </EditForm>
     </div>
 </div>
 
 <div>
-    <a href="/reviews">Back to List</a>
+    <a href="/reviews">Вернуться к списку</a>
 </div>
 
 @code {
     [SupplyParameterFromForm]
     private Review Review { get; set; } = new();
 
-    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    public List<Course>? Courses { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Courses = await dbContext.Courses.OrderBy(p => p.Title).ToListAsync();
+    }
+
     private async Task AddReview()
     {
         using var context = DbFactory.CreateDbContext();

@@ -1,0 +1,57 @@
+﻿@page "/cats/delete"
+@attribute [Authorize(Roles = "Administrator")]
+@using Microsoft.EntityFrameworkCore
+@using CoShop.Models
+@inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Удалить</PageTitle>
+
+<h1>Удалить</h1>
+
+<p>Вы уверены, что хотите удалить это?</p>
+<div>
+    <h2>Категория</h2>
+    <hr />
+    @if (cat is null)
+    {
+        <p><em>Загрузка...</em></p>
+    }
+    else
+    {
+        <dl class="row">
+            <dt class="col-sm-2">Название</dt>
+            <dd class="col-sm-10">@cat.Name</dd>
+        </dl>
+        <EditForm method="post" Model="cat" OnValidSubmit="DeleteCat" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(cat is null)">Удалить</button> |
+            <a href="/cats">Вернуться к списку</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private Cat? cat;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        cat = await context.Cats.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (cat is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    private async Task DeleteCat()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Cats.Remove(cat!);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/cats");
+    }
+}

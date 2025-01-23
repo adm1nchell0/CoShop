@@ -1,18 +1,21 @@
 ﻿@page "/courses/edit"
+@attribute [Authorize(Roles = "Administrator")]
 @using Microsoft.EntityFrameworkCore
 @using CoShop.Models
+@using CoShop.Data
 @inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject ApplicationDbContext dbContext
 
-<PageTitle>Edit</PageTitle>
+<PageTitle>Редактировать</PageTitle>
 
-<h1>Edit</h1>
+<h1>Редактировать</h1>
 
-<h2>Course</h2>
+<h2>Курс</h2>
 <hr />
 @if (Course is null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Загрузка...</em></p>
 }
 else
 {
@@ -20,46 +23,55 @@ else
         <div class="col-md-4">
             <EditForm method="post" Model="Course" OnValidSubmit="UpdateCourse" FormName="edit" Enhance>
                 <DataAnnotationsValidator />
-                <ValidationSummary role="alert"/>
+                <ValidationSummary role="alert" />
                 <input type="hidden" name="Course.Id" value="@Course.Id" />
                 <div class="mb-3">
-                    <label for="title" class="form-label">Title:</label>
-                    <InputText id="title" @bind-Value="Course.Title" class="form-control" aria-required="true"/>
+                    <label for="title" class="form-label">Название:</label>
+                    <InputText id="title" @bind-Value="Course.Title" class="form-control" aria-required="true" />
                     <ValidationMessage For="() => Course.Title" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="description" class="form-label">Description:</label>
-                    <InputText id="description" @bind-Value="Course.Description" class="form-control" aria-required="true"/>
+                    <label for="description" class="form-label">Описание:</label>
+                    <InputText id="description" @bind-Value="Course.Description" class="form-control" aria-required="true" />
                     <ValidationMessage For="() => Course.Description" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="price" class="form-label">Price:</label>
-                    <InputNumber id="price" @bind-Value="Course.Price" class="form-control" aria-required="true"/>
+                    <label for="price" class="form-label">Цена:</label>
+                    <InputNumber id="price" @bind-Value="Course.Price" class="form-control" aria-required="true" />
                     <ValidationMessage For="() => Course.Price" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="createdat" class="form-label">CreatedAt:</label>
-                    <InputDate id="createdat" @bind-Value="Course.CreatedAt" class="form-control" aria-required="true"/>
+                    <label for="createdat" class="form-label">Дата создания:</label>
+                    <InputDate id="createdat" @bind-Value="Course.CreatedAt" class="form-control" aria-required="true" />
                     <ValidationMessage For="() => Course.CreatedAt" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="categoryid" class="form-label">CategoryId:</label>
-                    <InputNumber id="categoryid" @bind-Value="Course.CategoryId" class="form-control" aria-required="true"/>
-                    <ValidationMessage For="() => Course.CategoryId" class="text-danger" />
+                    <label for="CatId" class="form-label">Категория:</label>
+                    <InputSelect id="categoryId" @bind-Value="Course.CatId" class="form-control">
+                        <option value="">Выберите категорию...</option>
+                        @if (Cats != null)
+                        {
+                            @foreach (var category in Cats)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => Course.CatId" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="imageurl" class="form-label">ImageUrl:</label>
-                    <InputText id="imageurl" @bind-Value="Course.ImageUrl" class="form-control" aria-required="true"/>
+                    <label for="imageurl" class="form-label">Путь к изображению:</label>
+                    <InputText id="imageurl" @bind-Value="Course.ImageUrl" class="form-control" aria-required="true" />
                     <ValidationMessage For="() => Course.ImageUrl" class="text-danger" />
                 </div>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
             </EditForm>
         </div>
     </div>
 }
 
 <div>
-    <a href="/courses">Back to List</a>
+    <a href="/courses">Вернуться к списку</a>
 </div>
 
 @code {
@@ -68,6 +80,13 @@ else
 
     [SupplyParameterFromForm]
     private Course? Course { get; set; }
+
+    public List<Cat>? Cats { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Cats = dbContext.Cats.OrderBy(p => p.Name).ToList();
+    }
 
     protected override async Task OnInitializedAsync()
     {

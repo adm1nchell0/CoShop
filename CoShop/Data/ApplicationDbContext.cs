@@ -13,7 +13,7 @@ namespace CoShop.Data
         public DbSet<Lesson> Lessons { get; set; } = default!;
         public DbSet<Order> Orders { get; set; } = default!;
         public DbSet<Review> Reviews { get; set; } = default!;
-        public DbSet<Category> Categorys { get; set; } = default!;
+        public DbSet<Cat> Cats { get; set; } = default!;
         public DbSet<ApplicationUser> ApplicationUsers { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -54,11 +54,11 @@ namespace CoShop.Data
                 .WithOne(r => r.ApplicationUser)
                 .HasForeignKey(r => r.ApplicationUserId);
 
-            // Связь между Course и Category (многие к одному)
-            modelBuilder.Entity<Category>()
+            // Связь между Course и Cat (многие к одному)
+            modelBuilder.Entity<Cat>()
                 .HasMany(c => c.Courses)
-                .WithOne(cc => cc.Category)
-                .HasForeignKey(c => c.CategoryId);
+                .WithOne(cc => cc.Cat)
+                .HasForeignKey(c => c.CatId);
 
             base.OnModelCreating(modelBuilder);
         }

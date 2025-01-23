@@ -1,0 +1,83 @@
+﻿@page "/mycourses"
+@using Microsoft.EntityFrameworkCore
+@using CoShop.Models
+@using CoShop.Data
+@using System.Security.Claims
+@inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Мои курсы</PageTitle>
+
+<h1>Мои курсы</h1>
+
+@if (courses == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (courses.Count == 0)
+{
+    <p>У вас пока нет курсов.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var course in courses)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card custom-card-height border-0 border-radius-custom text-white" style="background-image: url('/images/@course.ImageUrl'); height: 180px; border-radius: 25px; background-size: cover; background-position: center;">
+                    <div class="card-body bg-overlay d-flex flex-column justify-content-between" style="border-radius: 25px">
+                        <div>
+                            <h6 class="card-title">@course.Title</h6>
+                            <p class="card-text">@course.Description</p>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-end">
+                            <p class="card-text mb-0">@course.Price $</p>
+                            <NavLink class="btn btn-primary btn-radius-custom custom-btn ml-auto" style="border-radius: 15px; padding: 5px 10px;" href="@($"/course/{course.Id}")">Подробнее</NavLink>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+<style>
+    .bg-overlay {
+        background: rgba(0, 0, 0, 0.25); /* Полупрозрачный черный фон для текста */
+        color: white !important;
+        border-radius: 15px;
+        height: 100%; /* Увеличение высоты карточки */
+    }
+
+    .custom-btn {
+        background-color: rgba(0, 0, 0, 0.25) !important;
+        border: none !important; /* Убираем стандартную границу кнопки */
+        color: white !important; /* Цвет текста кнопки */
+    }
+
+    .custom-btn:hover {
+        background-color: rgba(0, 0, 0, 0.5) !important; /* Изменение фона при наведении */
+    }
+</style>
+
+
+@code {
+    private List<Course> courses = new();
+    private string userId = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            userId = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            using var context = DbFactory.CreateDbContext();
+            courses = await context.Courses
+                .Where(c => c.Orders.Any(o => o.ApplicationUserId == userId))
+                .ToListAsync();
+        }
+    }
+}

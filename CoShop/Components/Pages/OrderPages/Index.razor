@@ -1,4 +1,5 @@
 ﻿@page "/orders"
+@attribute [Authorize(Roles = "Administrator")]
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using CoShop.Models
@@ -6,24 +7,23 @@
 @implements IAsyncDisposable
 @inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Список</PageTitle>
 
-<h1>Index</h1>
+<h1>Список</h1>
 
 <p>
-    <a href="orders/create">Create New</a>
+    <a href="orders/create">Создать новый</a>
 </p>
 
 <QuickGrid Class="table" Items="context.Orders">
-    <PropertyColumn Property="order => order.ApplicationUserId" />
-    <PropertyColumn Property="order => order.CourseId" />
-    <PropertyColumn Property="order => order.OrderDate" />
-    <PropertyColumn Property="order => order.TotalAmount" />s
+    <PropertyColumn Property="order => order.ApplicationUserId" Title="ID Пользователя" />
+    <PropertyColumn Property="order => order.CourseId" Title="ID Курса" />
+    <PropertyColumn Property="order => order.OrderDate" Title="Дата оформления" />
 
     <TemplateColumn Context="order">
-        <a href="@($"orders/edit?id={order.Id}")">Edit</a> |
-        <a href="@($"orders/details?id={order.Id}")">Details</a> |
-        <a href="@($"orders/delete?id={order.Id}")">Delete</a>
+        <a href="@($"orders/edit?id={order.Id}")">Редактировать</a> |
+        <a href="@($"orders/details?id={order.Id}")">Детали</a> |
+        <a href="@($"orders/delete?id={order.Id}")">Удалить</a>
     </TemplateColumn>
 </QuickGrid>
 

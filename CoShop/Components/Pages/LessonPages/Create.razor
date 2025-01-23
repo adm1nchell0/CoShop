@@ -1,14 +1,17 @@
 ﻿@page "/lessons/create"
+@attribute [Authorize(Roles = "Administrator")]
 @using Microsoft.EntityFrameworkCore
 @using CoShop.Models
+@using CoShop.Data
 @inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject ApplicationDbContext dbContext
 
-<PageTitle>Create</PageTitle>
+<PageTitle>Создать</PageTitle>
 
-<h1>Create</h1>
+<h1>Создать</h1>
 
-<h2>Lesson</h2>
+<h2>Урок</h2>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -16,37 +19,53 @@
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
             <div class="mb-3">
-                <label for="title" class="form-label">Title:</label>
+                <label for="title" class="form-label">Название:</label>
                 <InputText id="title" @bind-Value="Lesson.Title" class="form-control" aria-required="true" />
                 <ValidationMessage For="() => Lesson.Title" class="text-danger" />
             </div>
             <div class="mb-3">
-                <label for="content" class="form-label">Content:</label>
+                <label for="content" class="form-label">Содержание:</label>
                 <InputText id="content" @bind-Value="Lesson.Content" class="form-control" aria-required="true" />
                 <ValidationMessage For="() => Lesson.Content" class="text-danger" />
             </div>
             <div class="mb-3">
-                <label for="courseid" class="form-label">CourseId:</label>
-                <InputNumber id="courseid" @bind-Value="Lesson.CourseId" class="form-control" aria-required="true" />
+                <label for="CourseId" class="form-label">Курс:</label>
+                <InputSelect id="courseId" @bind-Value="Lesson.CourseId" class="form-control">
+                    <option value="">Выберите курс...</option>
+                    @if (Courses != null)
+                    {
+                        @foreach (var course in Courses)
+                        {
+                            <option value="@course.Id">@course.Title</option>
+                        }
+                    }
+                </InputSelect>
                 <ValidationMessage For="() => Lesson.CourseId" class="text-danger" />
             </div>
             <div class="mb-3">
-                <label for="duration" class="form-label">Duration:</label>
-                <InputText id="duration" @bind-Value="Lesson.Duration" class="form-control" aria-required="true" />
+                <label for="duration" class="form-label">Продолжительность:</label>
+                <InputText id="duration" @bind-Value="Lesson.Duration" class="form-control" aria-required="true" placeholder="00:00:00" />
                 <ValidationMessage For="() => Lesson.Duration" class="text-danger" />
             </div>
-            <button type="submit" class="btn btn-primary">Create</button>
+            <button type="submit" class="btn btn-primary">Создать</button>
         </EditForm>
     </div>
 </div>
 
 <div>
-    <a href="/lessons">Back to List</a>
+    <a href="/lessons">Вернуться к списку</a>
 </div>
 
 @code {
     [SupplyParameterFromForm]
     private Lesson Lesson { get; set; } = new();
+
+    public List<Course>? Courses { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Courses = dbContext.Courses.OrderBy(p => p.Title).ToList();
+    }
 
     // Защита от атак чрезмерного заполнения, см. https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddLesson()

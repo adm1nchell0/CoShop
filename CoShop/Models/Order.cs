@@ -19,9 +19,6 @@ namespace CoShop.Models
         [Display(Name = "Дата оформления")]
         public DateTime OrderDate { get; set; } // Дата и время оформления заказа
 
-        [Required]
-        [Display(Name = "Сумма заказа")]
-        public decimal TotalAmount { get; set; } // Общая сумма заказа
         public virtual ApplicationUser? ApplicationUser { get; set; } // Пользователь, сделавший заказ
         public virtual Course? Course { get; set; } // Курс, который был куплен
     }

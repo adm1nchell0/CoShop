@@ -1,40 +1,41 @@
-﻿@page "/categories/edit"
+﻿@page "/cats/edit"
+@attribute [Authorize(Roles = "Administrator")]
 @using Microsoft.EntityFrameworkCore
 @using CoShop.Models
 @inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Edit</PageTitle>
+<PageTitle>Редактировать</PageTitle>
 
-<h1>Edit</h1>
+<h1>Редактировать</h1>
 
-<h2>Category</h2>
+<h2>Категория</h2>
 <hr />
-@if (Category is null)
+@if (Cat is null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Загрузка...</em></p>
 }
 else
 {
     <div class="row">
         <div class="col-md-4">
-            <EditForm method="post" Model="Category" OnValidSubmit="UpdateCategory" FormName="edit" Enhance>
+            <EditForm method="post" Model="Cat" OnValidSubmit="UpdateCat" FormName="edit" Enhance>
                 <DataAnnotationsValidator />
-                <ValidationSummary role="alert"/>
-                <input type="hidden" name="Category.Id" value="@Category.Id" />
+                <ValidationSummary role="alert" />
+                <input type="hidden" name="Cat.Id" value="@Cat.Id" />
                 <div class="mb-3">
-                    <label for="name" class="form-label">Name:</label>
-                    <InputText id="name" @bind-Value="Category.Name" class="form-control" aria-required="true"/>
-                    <ValidationMessage For="() => Category.Name" class="text-danger" />
+                    <label for="name" class="form-label">Название:</label>
+                    <InputText id="name" @bind-Value="Cat.Name" class="form-control" aria-required="true" />
+                    <ValidationMessage For="() => Cat.Name" class="text-danger" />
                 </div>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
             </EditForm>
         </div>
     </div>
 }
 
 <div>
-    <a href="/categories">Back to List</a>
+    <a href="/cats">Вернуться к списку</a>
 </div>
 
 @code {
@@ -42,14 +43,14 @@ else
     private int Id { get; set; }
 
     [SupplyParameterFromForm]
-    private Category? Category { get; set; }
+    private Cat? Cat { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        Category ??= await context.Categorys.FirstOrDefaultAsync(m => m.Id == Id);
+        Cat ??= await context.Cats.FirstOrDefaultAsync(m => m.Id == Id);
 
-        if (Category is null)
+        if (Cat is null)
         {
             NavigationManager.NavigateTo("notfound");
         }
@@ -57,10 +58,10 @@ else
 
     // To protect from overposting attacks, enable the specific properties you want to bind to.
     // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
-    private async Task UpdateCategory()
+    private async Task UpdateCat()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Attach(Category!).State = EntityState.Modified;
+        context.Attach(Cat!).State = EntityState.Modified;
 
         try
         {
@@ -68,7 +69,7 @@ else
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!CategoryExists(Category!.Id))
+            if (!CatExists(Cat!.Id))
             {
                 NavigationManager.NavigateTo("notfound");
             }
@@ -78,12 +79,12 @@ else
             }
         }
 
-        NavigationManager.NavigateTo("/categories");
+        NavigationManager.NavigateTo("/cats");
     }
 
-    private bool CategoryExists(int id)
+    private bool CatExists(int id)
     {
         using var context = DbFactory.CreateDbContext();
-        return context.Categorys.Any(e => e.Id == id);
+        return context.Cats.Any(e => e.Id == id);
     }
 }

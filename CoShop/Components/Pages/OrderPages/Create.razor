@@ -1,54 +1,67 @@
 ﻿@page "/orders/create"
+@attribute [Authorize(Roles = "Administrator")]
 @using Microsoft.EntityFrameworkCore
 @using CoShop.Models
+@using CoShop.Data
 @inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject ApplicationDbContext dbContext
 
-<PageTitle>Create</PageTitle>
+<PageTitle>Создать</PageTitle>
 
-<h1>Create</h1>
+<h1>Создать</h1>
 
-<h2>Order</h2>
+<h2>Заказ</h2>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <EditForm method="post" Model="Order" OnValidSubmit="AddOrder" FormName="create" Enhance>
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert"/>
+            <ValidationSummary class="text-danger" role="alert" />
             <div class="mb-3">
-                <label for="polzoid" class="form-label">ApplicationUserId:</label> 
-                <InputNumber id="polzoid" @bind-Value="Order.ApplicationUserId" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Order.ApplicationUserId" class="text-danger" /> 
-            </div>        
+                <label for="applicationUserId" class="form-label">ID Пользователя:</label>
+                <InputText id="applicationUserId" @bind-Value="Order.ApplicationUserId" class="form-control" aria-required="true" />
+                <ValidationMessage For="() => Order.ApplicationUserId" class="text-danger" />
+            </div>
             <div class="mb-3">
-                <label for="courseid" class="form-label">CourseId:</label> 
-                <InputNumber id="courseid" @bind-Value="Order.CourseId" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Order.CourseId" class="text-danger" /> 
-            </div>        
+                <label for="CourseId" class="form-label">Курс:</label>
+                <InputSelect id="courseId" @bind-Value="Order.CourseId" class="form-control">
+                    <option value="">Выберите курс...</option>
+                    @if (Courses != null)
+                    {
+                        @foreach (var course in Courses)
+                        {
+                            <option value="@course.Id">@course.Title</option>
+                        }
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => Order.CourseId" class="text-danger" />
+            </div>
             <div class="mb-3">
-                <label for="orderdate" class="form-label">OrderDate:</label> 
-                <InputDate id="orderdate" @bind-Value="Order.OrderDate" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Order.OrderDate" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="totalamount" class="form-label">TotalAmount:</label> 
-                <InputNumber id="totalamount" @bind-Value="Order.TotalAmount" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Order.TotalAmount" class="text-danger" /> 
-            </div>        
-            <button type="submit" class="btn btn-primary">Create</button>
+                <label for="orderDate" class="form-label">Дата заказа:</label>
+                <InputDate id="orderDate" @bind-Value="Order.OrderDate" class="form-control" aria-required="true" />
+                <ValidationMessage For="() => Order.OrderDate" class="text-danger" />
+            </div>
+            <button type="submit" class="btn btn-primary">Создать</button>
         </EditForm>
     </div>
 </div>
 
 <div>
-    <a href="/orders">Back to List</a>
+    <a href="/orders">Вернуться к списку</a>
 </div>
 
 @code {
     [SupplyParameterFromForm]
     private Order Order { get; set; } = new();
 
-    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    public List<Course>? Courses { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Courses = await dbContext.Courses.OrderBy(p => p.Title).ToListAsync();
+    }
+
     private async Task AddOrder()
     {
         using var context = DbFactory.CreateDbContext();

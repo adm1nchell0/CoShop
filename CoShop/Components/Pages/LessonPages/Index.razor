@@ -1,4 +1,5 @@
 ﻿@page "/lessons"
+@attribute [Authorize(Roles = "Administrator")]
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using CoShop.Models
@@ -6,24 +7,24 @@
 @implements IAsyncDisposable
 @inject IDbContextFactory<CoShop.Data.ApplicationDbContext> DbFactory
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Список</PageTitle>
 
-<h1>Index</h1>
+<h1>Список</h1>
 
 <p>
-    <a href="lessons/create">Create New</a>
+    <a href="lessons/create">Создать новый</a>
 </p>
 
 <QuickGrid Class="table" Items="context.Lessons">
-    <PropertyColumn Property="lesson => lesson.Title" />
-    <PropertyColumn Property="lesson => lesson.Content" />
-    <PropertyColumn Property="lesson => lesson.CourseId" />
-    <PropertyColumn Property="lesson => lesson.Duration" />
+    <PropertyColumn Property="lesson => lesson.Title" Title="Название" />
+    <PropertyColumn Property="lesson => lesson.Content" Title="Содержимое" />
+    <PropertyColumn Property="lesson => lesson.CourseId" Title="ID Курса" />
+    <PropertyColumn Property="lesson => lesson.Duration" Title="Длительность" />
 
     <TemplateColumn Context="lesson">
-        <a href="@($"lessons/edit?id={lesson.Id}")">Edit</a> |
-        <a href="@($"lessons/details?id={lesson.Id}")">Details</a> |
-        <a href="@($"lessons/delete?id={lesson.Id}")">Delete</a>
+        <a href="@($"lessons/edit?id={lesson.Id}")">Редактировать</a> |
+        <a href="@($"lessons/details?id={lesson.Id}")">Детали</a> |
+        <a href="@($"lessons/delete?id={lesson.Id}")">Удалить</a>
     </TemplateColumn>
 </QuickGrid>
 
